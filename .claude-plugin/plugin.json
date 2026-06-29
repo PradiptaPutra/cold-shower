@@ -1,0 +1,27 @@
+{
+  "name": "cold-shower",
+  "version": "1.0.0",
+  "description": "Reality check for vibe-coded apps. Five audits, one report: LLM costs, AI security, code health, dependencies, production readiness. Auto-activates on relevant keywords.",
+  "author": {
+    "name": "PradiptaPutra",
+    "url": "https://github.com/PradiptaPutra"
+  },
+  "hooks": {
+    "SessionStart": [{
+      "hooks": [{
+        "type": "command",
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/activate.js\"",
+        "timeout": 5
+      }]
+    }],
+    "UserPromptSubmit": [{
+      "hooks": [{
+        "type": "command",
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/trigger.js\"",
+        "timeout": 10
+      }]
+    }]
+  },
+  "skills": ["cold-shower"],
+  "repository": "https://github.com/PradiptaPutra/cold-shower"
+}
