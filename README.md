@@ -10,7 +10,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
 [![Install](https://img.shields.io/badge/install-curl%20%7C%20bash-brightgreen)](#install)
 
-*Audits what AI-generated code actually breaks in production.*
+*Audits what's broken. Plans before you build. Remembers what you decided.*
 *Installs once. Auto-triggers. Never needs a manual command.*
 
 </div>
@@ -19,7 +19,7 @@
 
 ## 🔍 What it does
 
-Runs **6 parallel audits** and outputs a **Vibe Score (0–100)** with ordered fix sprints.
+**Three modes, one install.** Auto-triggers on what you say — no commands to memorize.
 
 | # | Audit | What it catches |
 |---|-------|----------------|
@@ -33,6 +33,27 @@ Runs **6 parallel audits** and outputs a **Vibe Score (0–100)** with ordered f
 **Scores:** 90+ = A &nbsp;|&nbsp; 75–89 = B &nbsp;|&nbsp; 60–74 = C &nbsp;|&nbsp; 40–59 = D &nbsp;|&nbsp; <40 = F
 
 Saves Vibe Score to `.cold-shower/score-history.json` — track improvement sprint over sprint.
+
+### 📋 Plan-gate — structured plan before any code
+
+Triggers on: "implement X", "add X", "fix X", "refactor X"
+
+Generates a structured plan (files to touch, files NOT to touch, rollback steps, pre-mortem) and **blocks all file edits** via a `PreToolUse` hook until you type `APPROVED`. The only Claude Code skill that enforces planning at the hook level — not just soft instruction.
+
+### 🧠 Recall — second brain, beats Obsidian for devs
+
+Triggers on: "remember this", "what did we decide", session end (auto-suggests captures)
+
+Saves decisions + WHY, fragile file warnings, fixed bugs, and domain context to local markdown brain files. `PreToolUse` hook warns before touching files marked fragile. Grep-based retrieval (~100 tokens) vs Obsidian MCP vault scan (~7M tokens).
+
+```
+~/.claude/brain/preferences.md              ← global, all projects
+~/.claude/projects/<project>/brain/
+  decisions.md  ← "chose Supabase — Prisma 380KB kills edge cold start"
+  avoid.md      ← "don't touch auth middleware — race condition"
+  bugs.md       ← "N+1 in getUserList fixed 2026-05-01"
+  context.md    ← domain knowledge, user base, compliance
+```
 
 ---
 
@@ -52,14 +73,17 @@ Installs the skill + wires `SessionStart` and `UserPromptSubmit` hooks into `~/.
 
 It fires automatically when you describe the problem:
 
-| You say | What triggers |
-|---------|--------------|
-| `"my OpenAI bill jumped to $400"` | 🤑 LLM cost audit |
-| `"app went down on Product Hunt"` | 🚨 Emergency + prod readiness |
-| `"this codebase is a mess"` | 🧹 Code health + deps |
-| `"about to deploy"` | 🛡️ Full pre-deploy gate |
-| `"I committed my .env by accident"` | 🔴 Sprint 0.5: rotate + scrub history |
-| `"re-audit"` | 📊 Re-runs audit, compares to last score |
+| You say | Mode | What triggers |
+|---------|------|--------------|
+| `"audit my codebase"` | 🔍 Audit | Runs audits A–F → Vibe Score |
+| `"about to deploy"` | 🔍 Audit | Pre-deploy gate check |
+| `"re-audit"` | 🔍 Audit | Re-runs, compares to last score |
+| `"implement stripe payments"` | 📋 Plan | Structured plan → blocks edits until APPROVED |
+| `"fix this bug"` | 📋 Plan | Plan first, then implementation |
+| `"I committed my .env"` | 🔴 Emergency | Sprint 0.5: rotate + scrub history |
+| `"remember this decision"` | 🧠 Recall | Saves to brain files |
+| `"what did we decide about auth"` | 🧠 Recall | Searches brain files |
+| `"re-audit"` | 🧠 Recall | Re-runs audit, compares score |
 
 Or call it directly: `/cold-shower`
 
@@ -121,6 +145,8 @@ After any sprint: type `re-audit` to re-run and see if Vibe Score improved.
 
 ## 🎯 What no other skill covers
 
+- **Hook-enforced planning** — `PreToolUse` hook physically blocks edits until plan approved; no other skill does this
+- **Persistent second brain** — decisions, fragile file warnings, bug history survive across sessions; no Obsidian needed
 - **Your app's LLM bill** — audits spend inside your codebase, not just your Claude usage
 - **AI endpoint security** — OWASP LLM Top 10 applied to *your* endpoints
 - **Git secrets emergency** — detects committed `.env` and triggers immediate rotation sprint

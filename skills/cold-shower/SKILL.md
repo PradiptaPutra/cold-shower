@@ -1,24 +1,26 @@
 ---
 name: cold-shower
 description: |
-  Full reality check for vibe-coded apps. One command runs five parallel audits:
-  (1) LLM API cost patterns — finds runaway spend, missing caching, wrong model selection;
-  (2) AI endpoint security — prompt injection, PII leakage, per-user cost abuse, jailbreaks;
-  (3) Code health — god files, circular deps, duplicate logic, missing async error handling;
-  (4) Dependency archaeology — unused packages, semantic duplicates, abandoned libs, bundle bloat;
-  (5) Production readiness — connection pool exhaustion, N+1 queries, missing rate limits.
-  Outputs one prioritized health report with a Vibe Score and fix sprints ordered by impact.
+  Three modes, one skill. Auto-triggers on what you say — no commands to memorize.
+  🔍 AUDIT: 6 parallel audits (LLM costs, AI security, code health, deps, prod readiness, git/devops) → Vibe Score 0-100.
+  📋 PLAN-GATE: generates structured plan (files to touch, rollback, pre-mortem) then PreToolUse hook blocks all edits until user types APPROVED.
+  🧠 RECALL: saves decisions + WHY, fragile file warnings, bug history to local brain files; grep-based retrieval across sessions.
   Emergency mode auto-activates when app is actively failing under traffic.
 
   Trigger on: "audit my codebase", "is this ready to ship", "cold shower", "reality check",
   "something always breaks", "LLM bill too high", "is my AI secure", "clean up my deps",
-  "app crashed under traffic", "vibe code mess", "/cold-shower".
+  "app crashed under traffic", "vibe code mess", "/cold-shower",
+  "implement X", "add X", "fix X", "refactor X", "build X",
+  "remember this", "what did we decide", "save this decision".
 tools: Read, Write, Bash, Grep, Glob
 ---
 
-# Cold Shower
+# cold-shower v2 — Reality Check for Vibe-Coded Apps
 
-Wake-up call for your vibe-coded codebase. Five audits. One report. No hiding.
+Three modes, one skill:
+- 🔍 AUDIT: 6 parallel audits (LLM costs, AI security, code health, deps, prod readiness, git/devops) → Vibe Score 0-100
+- 📋 PLAN-GATE: structured implementation plan → PreToolUse hook blocks edits until approved  
+- 🧠 RECALL: persistent second brain → decisions, fragile files, bug history across sessions
 
 ---
 

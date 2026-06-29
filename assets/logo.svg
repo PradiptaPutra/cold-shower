@@ -1,74 +1,112 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <!-- Background circle -->
-  <circle cx="100" cy="100" r="96" fill="#0f172a" stroke="#1e40af" stroke-width="3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1b2e"/>
+      <stop offset="100%" stop-color="#0a1628"/>
+    </linearGradient>
+    <linearGradient id="headGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
 
-  <!-- Showerhead pipe -->
-  <rect x="60" y="18" width="8" height="32" rx="3" fill="#60a5fa"/>
-  <!-- Showerhead body -->
-  <rect x="44" y="46" width="40" height="14" rx="4" fill="#3b82f6"/>
-  <!-- Showerhead holes -->
-  <circle cx="52" cy="53" r="2" fill="#0f172a"/>
-  <circle cx="60" cy="53" r="2" fill="#0f172a"/>
-  <circle cx="68" cy="53" r="2" fill="#0f172a"/>
-  <circle cx="76" cy="53" r="2" fill="#0f172a"/>
+  <!-- Background -->
+  <circle cx="120" cy="120" r="118" fill="url(#bgGrad)"/>
+  <circle cx="120" cy="120" r="116" fill="none" stroke="#1e40af" stroke-width="2.5"/>
 
-  <!-- Water droplets -->
-  <line x1="52" y1="62" x2="48" y2="80" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
-  <line x1="60" y1="62" x2="58" y2="82" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
-  <line x1="68" y1="62" x2="68" y2="84" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
-  <line x1="76" y1="62" x2="78" y2="80" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
-  <!-- Second wave droplets -->
-  <line x1="50" y1="84" x2="46" y2="100" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="59" y1="86" x2="57" y2="104" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="68" y1="88" x2="68" y2="106" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="79" y1="84" x2="81" y2="100" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Pipe arm (top-right diagonal) -->
+  <line x1="188" y1="28" x2="148" y2="66" stroke="#3b82f6" stroke-width="9" stroke-linecap="round"/>
+  <line x1="188" y1="28" x2="148" y2="66" stroke="#60a5fa" stroke-width="4" stroke-linecap="round"/>
 
-  <!-- Dev head -->
-  <circle cx="128" cy="78" r="24" fill="#fbbf24"/>
-  <!-- Hair -->
-  <path d="M108 68 Q128 48 148 68" fill="#1e293b" stroke="none"/>
-  <rect x="106" y="58" width="44" height="14" rx="7" fill="#1e293b"/>
+  <!-- Showerhead body (round disc) -->
+  <ellipse cx="136" cy="78" rx="34" ry="20" fill="url(#headGrad)" stroke="#3b82f6" stroke-width="2.5"/>
+  <!-- Inner rim -->
+  <ellipse cx="136" cy="78" rx="28" ry="15" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.5"/>
 
-  <!-- Shocked eyes (wide open) -->
-  <circle cx="120" cy="76" r="6" fill="white"/>
-  <circle cx="136" cy="76" r="6" fill="white"/>
-  <circle cx="121" cy="77" r="3" fill="#1e293b"/>
-  <circle cx="137" cy="77" r="3" fill="#1e293b"/>
-  <!-- Pupils -->
-  <circle cx="120" cy="75" r="1.5" fill="#000"/>
-  <circle cx="136" cy="75" r="1.5" fill="#000"/>
+  <!-- Spray holes (3x3 grid on face of head) -->
+  <g fill="#93c5fd" filter="url(#glow)">
+    <circle cx="122" cy="75" r="2.8"/>
+    <circle cx="133" cy="73" r="2.8"/>
+    <circle cx="144" cy="74" r="2.8"/>
+    <circle cx="118" cy="82" r="2.8"/>
+    <circle cx="129" cy="81" r="2.8"/>
+    <circle cx="140" cy="80" r="2.8"/>
+    <circle cx="151" cy="80" r="2.8"/>
+    <circle cx="125" cy="88" r="2.8"/>
+    <circle cx="136" cy="87" r="2.8"/>
+    <circle cx="147" cy="87" r="2.8"/>
+  </g>
 
-  <!-- Shock eyebrows raised -->
-  <path d="M113 67 Q120 62 127 67" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <path d="M129 67 Q136 62 143 67" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Water streams (angled left-downward, fan pattern) -->
+  <g stroke-linecap="round">
+    <!-- Primary streams -->
+    <line x1="106" y1="96"  x2="58"  y2="164" stroke="#60a5fa" stroke-width="2.5" opacity="0.95"/>
+    <line x1="116" y1="97"  x2="72"  y2="168" stroke="#60a5fa" stroke-width="2.5" opacity="0.9"/>
+    <line x1="126" y1="97"  x2="88"  y2="170" stroke="#60a5fa" stroke-width="2.5" opacity="0.9"/>
+    <line x1="136" y1="96"  x2="104" y2="168" stroke="#60a5fa" stroke-width="2.5" opacity="0.85"/>
+    <line x1="146" y1="95"  x2="120" y2="166" stroke="#60a5fa" stroke-width="2.5" opacity="0.8"/>
+    <line x1="156" y1="93"  x2="136" y2="162" stroke="#60a5fa" stroke-width="2"   opacity="0.7"/>
+    <!-- Secondary streams (lighter) -->
+    <line x1="100" y1="98"  x2="48"  y2="162" stroke="#93c5fd" stroke-width="1.5" opacity="0.5"/>
+    <line x1="121" y1="99"  x2="80"  y2="172" stroke="#93c5fd" stroke-width="1.5" opacity="0.45"/>
+    <line x1="141" y1="98"  x2="112" y2="172" stroke="#93c5fd" stroke-width="1.5" opacity="0.4"/>
+    <line x1="161" y1="94"  x2="146" y2="163" stroke="#93c5fd" stroke-width="1.5" opacity="0.35"/>
+  </g>
 
-  <!-- Open mouth (shocked O) -->
-  <ellipse cx="128" cy="91" rx="7" ry="8" fill="#1e293b"/>
-  <ellipse cx="128" cy="93" rx="5" ry="5" fill="#dc2626"/>
+  <!-- Droplets at stream tips -->
+  <g fill="#bfdbfe" opacity="0.6">
+    <ellipse cx="58"  cy="166" rx="2" ry="3" transform="rotate(-55 58 166)"/>
+    <ellipse cx="72"  cy="170" rx="2" ry="3" transform="rotate(-55 72 170)"/>
+    <ellipse cx="88"  cy="172" rx="2" ry="3" transform="rotate(-55 88 172)"/>
+    <ellipse cx="104" cy="170" rx="2" ry="3" transform="rotate(-55 104 170)"/>
+    <ellipse cx="120" cy="168" rx="2" ry="3" transform="rotate(-55 120 168)"/>
+    <ellipse cx="136" cy="164" rx="2" ry="3" transform="rotate(-55 136 164)"/>
+  </g>
 
-  <!-- Body / shoulders -->
-  <rect x="104" y="102" width="48" height="50" rx="8" fill="#3b82f6"/>
-  <!-- Laptop -->
-  <rect x="108" y="114" width="40" height="26" rx="3" fill="#1e293b"/>
-  <rect x="110" y="116" width="36" height="20" rx="2" fill="#0f172a"/>
-  <!-- Code lines on screen -->
-  <line x1="113" y1="120" x2="130" y2="120" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="113" y1="124" x2="125" y2="124" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="113" y1="128" x2="132" y2="128" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
-  <!-- Laptop base -->
-  <rect x="108" y="140" width="40" height="3" rx="1" fill="#374151"/>
+  <!-- === VIBE SCORE GAUGE === -->
+  <!-- Arc track: center (120,210) radius 68, 180° semicircle -->
+  <!-- From (52,210) to (188,210) going through top -->
 
-  <!-- Water splash hitting head -->
-  <circle cx="105" cy="75" r="3" fill="#bfdbfe" opacity="0.7"/>
-  <circle cx="113" cy="60" r="2" fill="#93c5fd" opacity="0.8"/>
-  <circle cx="98" cy="82" r="2" fill="#bfdbfe" opacity="0.6"/>
+  <!-- Track background -->
+  <path d="M 52 210 A 68 68 0 0 1 188 210"
+        fill="none" stroke="#1e3a5f" stroke-width="11" stroke-linecap="round"/>
 
-  <!-- Shock lines -->
-  <line x1="150" y1="58" x2="158" y2="52" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
-  <line x1="153" y1="68" x2="162" y2="66" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
-  <line x1="148" y1="52" x2="152" y2="44" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+  <!-- Grade segments — F→D (red), C (yellow), B→A (green) -->
+  <!-- 180° arc split: 0-40% red, 40-65% yellow, 65-100% green -->
+  <!-- 0%  = angle 180° → point (52,  210) -->
+  <!-- 40% = angle 108° → x=120+68cos(108°)=120-21=99,  y=210-68sin(108°)=210-64.7=145 -->
+  <!-- 65% = angle 63°  → x=120+68cos(63°)=120+30.8=151, y=210-68sin(63°)=210-60.6=149 -->
+  <!-- 100%= angle 0°   → point (188, 210) -->
 
-  <!-- Vibe Score badge -->
-  <rect x="56" y="158" width="88" height="26" rx="8" fill="#1e40af"/>
-  <text x="100" y="175" font-family="monospace" font-size="13" font-weight="bold" fill="white" text-anchor="middle">VIBE SCORE</text>
+  <!-- Red: F-D (0–40%) -->
+  <path d="M 52 210 A 68 68 0 0 1 99 145"
+        fill="none" stroke="#ef4444" stroke-width="11" stroke-linecap="butt"/>
+  <!-- Yellow: C (40–65%) -->
+  <path d="M 99 145 A 68 68 0 0 1 151 149"
+        fill="none" stroke="#f59e0b" stroke-width="11" stroke-linecap="butt"/>
+  <!-- Green: B-A (65–100%) -->
+  <path d="M 151 149 A 68 68 0 0 1 188 210"
+        fill="none" stroke="#22c55e" stroke-width="11" stroke-linecap="butt"/>
+
+  <!-- Needle pointing at 75% (B — where hukumai scored) -->
+  <!-- 75% → angle = 180 - 0.75*180 = 45° -->
+  <!-- tip: x=120+68cos(45°)=120+48=168, y=210-68sin(45°)=210-48=162 -->
+  <line x1="120" y1="210" x2="163" y2="165"
+        stroke="#f1f5f9" stroke-width="3" stroke-linecap="round"/>
+  <!-- Needle base cap -->
+  <circle cx="120" cy="210" r="7" fill="#f1f5f9"/>
+  <circle cx="120" cy="210" r="4" fill="#1d4ed8"/>
+
+  <!-- Grade labels -->
+  <text x="38"  y="215" font-family="ui-monospace,monospace" font-size="13" font-weight="800" fill="#ef4444">F</text>
+  <text x="117" y="138" font-family="ui-monospace,monospace" font-size="13" font-weight="800" fill="#f59e0b">C</text>
+  <text x="193" y="215" font-family="ui-monospace,monospace" font-size="13" font-weight="800" fill="#22c55e">A</text>
+
+  <!-- "cold-shower" label at bottom -->
+  <text x="120" y="233" font-family="ui-monospace,monospace" font-size="10" font-weight="600"
+        fill="#60a5fa" text-anchor="middle" letter-spacing="2">cold-shower</text>
 </svg>
