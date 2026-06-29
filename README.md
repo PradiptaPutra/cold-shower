@@ -1,173 +1,264 @@
 <div align="center">
 
-<img src="assets/logo.png" width="160" alt="cold-shower — frozen terminal cube"/>
+<img src="assets/logo.png" width="180" alt="cold-shower"/>
 
 # cold-shower
 
-**Reality check for vibe-coded apps.**
+**The reality check your vibe-coded app didn't ask for.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
-[![Install](https://img.shields.io/badge/install-curl%20%7C%20bash-brightgreen)](#install)
+[![Version](https://img.shields.io/badge/version-2.0-brightgreen)](#)
+[![Install](https://img.shields.io/badge/install-curl%20%7C%20bash-orange)](#-install)
 
-*Audits what's broken. Plans before you build. Remembers what you decided.*
-*Installs once. Auto-triggers. Never needs a manual command.*
+*One install. Three modes. Auto-triggers. No commands to memorize.*
 
 </div>
 
 ---
 
-## 🔍 What it does
+## 🥶 Why this exists
 
-**Three modes, one install.** Auto-triggers on what you say — no commands to memorize.
+> **65%** of vibe-coded production apps have at least one security vulnerability.
+> **45%** of AI-generated code fails basic security checks.
+> **2x** more secrets get leaked in AI-assisted commits vs human-written code.
 
-| # | Audit | What it catches |
-|---|-------|----------------|
-| 🤑 | **LLM Costs** | Runaway spend, missing semantic cache, wrong model routing |
-| 🔐 | **AI Security** | Prompt injection, PII leakage, per-user cost abuse |
-| 🧹 | **Code Health** | God files, circular deps, duplicate logic, floating promises |
-| 📦 | **Dependencies** | Unused packages, CVEs, archived libs, semantic duplicates |
-| 🚀 | **Prod Readiness** | N+1 queries, connection pool exhaustion, no rate limits |
-| 🛡️ | **Git/DevOps** | `.env` committed, unpinned Actions, no CI, no branch protection |
+You shipped fast. Claude helped. But nobody audited what came out.
 
-**Scores:** 90+ = A &nbsp;|&nbsp; 75–89 = B &nbsp;|&nbsp; 60–74 = C &nbsp;|&nbsp; 40–59 = D &nbsp;|&nbsp; <40 = F
+**cold-shower does.**
 
-Saves Vibe Score to `.cold-shower/score-history.json` — track improvement sprint over sprint.
+---
 
-### 📋 Plan-gate — structured plan before any code
-
-Triggers on: "implement X", "add X", "fix X", "refactor X"
-
-Generates a structured plan (files to touch, files NOT to touch, rollback steps, pre-mortem) and **blocks all file edits** via a `PreToolUse` hook until you type `APPROVED`. The only Claude Code skill that enforces planning at the hook level — not just soft instruction.
-
-### 🧠 Recall — second brain, beats Obsidian for devs
-
-Triggers on: "remember this", "what did we decide", session end (auto-suggests captures)
-
-Saves decisions + WHY, fragile file warnings, fixed bugs, and domain context to local markdown brain files. `PreToolUse` hook warns before touching files marked fragile. Grep-based retrieval (~100 tokens) vs Obsidian MCP vault scan (~7M tokens).
+## ⚡ Three modes, one skill
 
 ```
-~/.claude/brain/preferences.md              ← global, all projects
-~/.claude/projects/<project>/brain/
-  decisions.md  ← "chose Supabase — Prisma 380KB kills edge cold start"
-  avoid.md      ← "don't touch auth middleware — race condition"
-  bugs.md       ← "N+1 in getUserList fixed 2026-05-01"
-  context.md    ← domain knowledge, user base, compliance
+┌─────────────────────────────────────────────────────────────┐
+│                        cold-shower                          │
+├──────────────┬──────────────────────┬───────────────────────┤
+│  🔍 AUDIT   │     📋 PLAN-GATE     │      🧠 RECALL        │
+│             │                      │                        │
+│ 6 parallel  │ Structured plan      │ Persistent second      │
+│ audits →    │ BEFORE any code.     │ brain across all       │
+│ Vibe Score  │ Blocks edits via     │ sessions. Replaces     │
+│ 0–100       │ PreToolUse hook      │ Obsidian for devs.     │
+│             │ until APPROVED.      │                        │
+│ "audit me"  │ "implement X"        │ "remember this"        │
+└─────────────┴──────────────────────┴───────────────────────-┘
 ```
 
 ---
 
-## ⚡ Install
+## 🚿 Install
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/PradiptaPutra/cold-shower/main/install.sh | bash
 ```
 
-Installs the skill + wires `SessionStart` and `UserPromptSubmit` hooks into `~/.claude/settings.json`. Idempotent — safe to re-run.
+Done. Works on every project you open from that moment forward.
+
+**What the installer wires:**
+
+| Hook | Event | Does |
+|------|-------|------|
+| `activate.js` | `SessionStart` | Injects skill + loads brain memories |
+| `trigger.js` | `UserPromptSubmit` | Detects intent, routes to correct mode |
+| `gate.js` | `PreToolUse` | Blocks edits until plan approved |
+| `capture.js` | `Stop` | Suggests memories to save at session end |
+
+Idempotent — safe to re-run for updates.
 
 ---
 
-## 🤖 How it activates
+## 🤖 You never type a command
 
-**You never type `/cold-shower`.**
-
-It fires automatically when you describe the problem:
-
-| You say | Mode | What triggers |
-|---------|------|--------------|
-| `"audit my codebase"` | 🔍 Audit | Runs audits A–F → Vibe Score |
-| `"about to deploy"` | 🔍 Audit | Pre-deploy gate check |
-| `"re-audit"` | 🔍 Audit | Re-runs, compares to last score |
-| `"implement stripe payments"` | 📋 Plan | Structured plan → blocks edits until APPROVED |
-| `"fix this bug"` | 📋 Plan | Plan first, then implementation |
-| `"I committed my .env"` | 🔴 Emergency | Sprint 0.5: rotate + scrub history |
-| `"remember this decision"` | 🧠 Recall | Saves to brain files |
-| `"what did we decide about auth"` | 🧠 Recall | Searches brain files |
-| `"re-audit"` | 🧠 Recall | Re-runs audit, compares score |
-
-Or call it directly: `/cold-shower`
+| You say... | Mode | What happens |
+|-----------|------|-------------|
+| `"audit my codebase"` | 🔍 | Full 6-audit health check → Vibe Score |
+| `"is this ready to deploy?"` | 🔍 | Pre-deploy gate scan |
+| `"my LLM bill is insane"` | 🔍 | Cost audit → caching + routing fixes |
+| `"app crashed on Product Hunt"` | 🔍 | Emergency mode → 5-min triage |
+| `"re-audit"` | 🔍 | Re-runs, compares to last score |
+| `"implement stripe payments"` | 📋 | Structured plan → blocks edits until APPROVED |
+| `"fix this bug"` | 📋 | Plan first, then implementation |
+| `"I committed my .env"` | 🔴 | Rotate secrets + scrub git history |
+| `"remember this decision"` | 🧠 | Saves to brain with WHY + date |
+| `"what did we decide about auth"` | 🧠 | Searches brain files |
 
 ---
 
-## 📊 Example output
+## 📊 Audit output
 
 ```
-╔══════════════════════════════════════════════════════════╗
-║  COLD SHOWER — myapp — 2026-06-29                       ║
-╚══════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════╗
+║  🚿 COLD SHOWER — myapp — 2026-06-29                        ║
+╚══════════════════════════════════════════════════════════════╝
 
-VIBE SCORE: 75/100  Grade: B
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Last score: 45/100 (D) on 2026-06-15 — let's see if it improved.
 
-[A] LLM COSTS      — 1 issue (no semantic cache)
-[B] AI SECURITY    — 2 issues (no PII scrubbing, no token budget)
-[C] CODE HEALTH    — 20 god files | 2.9% dup | 0 floating promises
+VIBE SCORE: 71/100  Grade: C  ▲ +26 from last audit
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[A] LLM COSTS      — ✅ CLEAN
+[B] AI SECURITY    — 1 issue  (no per-user token budget)
+[C] CODE HEALTH    — 3 god files | 2.9% dup | 0 floating promises
 [D] DEPENDENCIES   — 18 moderate CVEs (dev-only) | 0 critical
 [E] PROD READINESS — ✅ CLEAN
-[F] GIT/DEVOPS     — 4 issues (unpinned Actions, no typecheck, no Dependabot)
+[F] GIT/DEVOPS     — 2 issues (no Dependabot, no branch protection)
 
 🔴 CRITICAL — None
 
 🟡 HIGH
+  [B] No per-user token budget — one user can drain your OpenAI key
   [C] AppShell.tsx 1768 lines — auth+routing+sidebar+chat all in one
-  [B] No PII scrubbing — raw user text sent to OpenAI
 
 🟢 QUICK WINS (15 min)
-  npx pinact .github/workflows/*.yml
-  Add tsc --noEmit to CI
   Add .github/dependabot.yml
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Set branch protection on main
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Score saved. History: 2 entries. Type re-audit after next sprint.
+```
 
-Which sprint? (1=DevOps, 2=LLM cache, 3=token budget, 4=god component surgery)
+---
+
+## 🔍 What each audit catches
+
+| # | Audit | Key checks |
+|---|-------|-----------|
+| 🤑 **A — LLM Costs** | Missing semantic cache, hardcoded expensive model, no conversation history trim |
+| 🔐 **B — AI Security** | Prompt injection in your endpoints, PII sent to OpenAI, no per-user budget, jailbreak surface |
+| 🧹 **C — Code Health** | God files >500 lines, circular deps, duplicate logic >10%, floating promises |
+| 📦 **D — Dependencies** | Unused packages (knip), CVEs (npm audit), archived libs, semantic duplicates |
+| 🚀 **E — Prod Readiness** | N+1 queries, connection pool exhaustion, no rate limits, missing indexes |
+| 🛡️ **F — Git/DevOps** | `.env` committed, unpinned Actions, no CI, no branch protection, workflow injection |
+
+**Audit F alone is worth the install.** CVE-2025-30066 (March 2025): a floating `@v4` Action tag got rewritten — 23,000 repos exposed. Audit F catches this.
+
+---
+
+## 📋 Plan-gate — no more AI slop
+
+Every time you say "implement X" or "fix X", cold-shower generates a structured plan **before writing a single line**:
+
+```markdown
+## Plan: Add Stripe payments
+
+### Files to Touch
+| File                  | Change        |
+|-----------------------|---------------|
+| src/checkout/Form.tsx | Add Stripe UI |
+| src/api/payments.ts   | New endpoint  |
+
+### Files NOT to Touch
+| File                    | Reason                        |
+|-------------------------|-------------------------------|
+| src/auth/middleware.ts  | Fragile — race condition #234 |
+
+### Pre-Mortem
+"Most likely failure: webhook arrives before order row exists."
+
+### Rollback
+Revert 3 files. No migration needed.
+```
+
+→ **"Type `APPROVED` to proceed."**
+
+The `PreToolUse` hook physically blocks all `Edit`/`Write` calls until you type APPROVED.
+**No other Claude Code skill enforces planning at the hook level.**
+
+---
+
+## 🧠 Recall — second brain without Obsidian
+
+| | Obsidian | cold-shower recall |
+|--|---------|-------------------|
+| Setup | Separate app + vault + MCP config | Included in `curl \| bash` |
+| Capture | Manual note-taking | `"remember this"` or auto-suggested |
+| Token cost | **~7M tokens** (full vault scan) | **~100 tokens** (grep) |
+| Anti-regression | ❌ | ✅ Warns before touching fragile files |
+| Survives context loss | Manually | Automatically |
+
+```
+~/.claude/brain/preferences.md              ← global preferences
+~/.claude/projects/myapp/brain/
+  decisions.md  ← "chose Supabase — Prisma 380KB kills edge cold start"
+  avoid.md      ← "don't touch auth — race condition, fixed 3 times"
+  bugs.md       ← "N+1 in getUserList, fixed 2026-05-01, regression-prone"
+  context.md    ← domain knowledge, user base, compliance requirements
+```
+
+Before editing any file in `avoid.md`:
+```
+RECALL WARNING: auth/middleware.ts marked fragile (2026-05-01).
+Reason: race condition in token refresh. Proceed carefully.
 ```
 
 ---
 
 ## 🏃 Fix sprints
 
-Each sprint generates **real working code** — not a todo list.
+Each sprint generates **working code files** — not a todo list.
 
-| Sprint | Time | Generates |
-|--------|------|-----------|
+| Sprint | Time | What gets generated |
+|--------|------|-------------------|
 | **0.5** 🔴 | 15 min | Secret rotation + `git filter-repo` history scrub |
-| **1** | 30 min | Dead dep removal + `knip.json` config |
-| **2** | 2 hr | Async error fixes + rate limiting |
-| **3** | 2 hr | Connection pool fix + N+1 query detection |
+| **1** | 30 min | Dep cleanup + `knip.json` |
+| **2** | 2 hr | Rate limiting + async error handling |
+| **3** | 2 hr | Connection pool fix + N+1 detection |
 | **4** | 4 hr | `lib/llm-cache.ts` + `lib/llm-router.ts` + `lib/llm-client.ts` |
 | **5** | 1 day | God component extraction playbook |
 | **6** | 1 hr | `ci.yml` + `dependabot.yml` + `src/env.ts` + branch protection |
 
-> Sprint 0.5 fires automatically before everything else if `.env` is committed to git.
+Sprint 0.5 fires **before everything else** if `.env` is committed. First action: rotate all secrets.
 
-After any sprint: type `re-audit` to re-run and see if Vibe Score improved.
+After any sprint → type `re-audit` → score compared to previous run automatically.
 
 ---
 
-## 🎯 What no other skill covers
+## 🆚 vs other top skills
 
-- **Hook-enforced planning** — `PreToolUse` hook physically blocks edits until plan approved; no other skill does this
-- **Persistent second brain** — decisions, fragile file warnings, bug history survive across sessions; no Obsidian needed
-- **Your app's LLM bill** — audits spend inside your codebase, not just your Claude usage
-- **AI endpoint security** — OWASP LLM Top 10 applied to *your* endpoints
-- **Git secrets emergency** — detects committed `.env` and triggers immediate rotation sprint
-- **Vibe Score history** — track score changes across time, not just a one-time snapshot
-- **Pre-deploy gate** — auto-triggers on "about to deploy" before problems reach production
-- **Real generated code** — Sprint 4 outputs drop-in TypeScript files you can use immediately
+| | 🪨 caveman (~78k ⭐) | 🐴 ponytail (~66k ⭐) | 🧊 cold-shower |
+|--|-----|-----|-----|
+| **What it changes** | How Claude *talks* | What Claude *builds* | What you *already built* |
+| **When it acts** | During session | During coding | Retrospective + pre-deploy |
+| **Hook enforcement** | ❌ soft | ❌ soft | ✅ PreToolUse hard block |
+| **Generates fix code** | ❌ | ❌ | ✅ real TS/JS files |
+| **Persistent memory** | ❌ | ❌ | ✅ survives sessions |
+| **Score over time** | ❌ | ❌ | ✅ history + trend |
+| **Multi-platform** | ✅ 30+ | ✅ 16+ | Claude Code |
+
+> caveman fixes verbosity. ponytail fixes over-engineering. cold-shower fixes what's already in production.
+> Install all three — they don't overlap.
+
+---
+
+## 🎯 Stats that make this real
+
+- **GitClear 2024:** AI code averages 12.3% duplication — triple human baseline. cold-shower Audit C catches this.
+- **Escape.tech:** 65% of 1,400 vibe-coded apps have a security issue. Audit B catches the common patterns.
+- **GitGuardian 2026:** AI-assisted commits have 2x the secret leak rate vs human code. Audit F catches committed secrets.
+- **CVE-2025-30066:** Floating `@v4` tag rewritten → 23,000 repos exposed. Audit F flags all unpinned Actions.
+- **Veracode 2026:** 45% of AI code from 100+ LLMs fails security checks. Audits B + D cover the main failure modes.
 
 ---
 
 ## 📋 Requirements
 
-- [Claude Code](https://claude.ai/code) (skill uses native `SessionStart` + `UserPromptSubmit` hooks)
-- Node.js (for hook scripts)
+- [Claude Code](https://claude.ai/code) — skill uses native hook system
+- Node.js 18+
 - `gh` CLI — optional, enables branch protection check in Audit F
 
-> Works across all your projects after one install — no per-project setup.
+---
+
+## 🗺️ Roadmap
+
+- [ ] Benchmarks: 15-repo study (Juice Shop, NodeGoat, real vibe-coded apps)
+- [ ] Cursor `.cursorrules` port for wider reach
+- [ ] `cold-shower diff` — scan only PR-changed files
 
 ---
 
 <div align="center">
 
-MIT License &nbsp;·&nbsp; [Issues](https://github.com/PradiptaPutra/cold-shower/issues) &nbsp;·&nbsp; [PradiptaPutra](https://github.com/PradiptaPutra)
+MIT &nbsp;·&nbsp; [Issues](https://github.com/PradiptaPutra/cold-shower/issues) &nbsp;·&nbsp; [PradiptaPutra](https://github.com/PradiptaPutra)
 
 </div>
