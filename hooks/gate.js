@@ -118,6 +118,18 @@ function checkAvoid(filePath, avoidEntries) {
   return null
 }
 
+function writeHeartbeat() {
+  const stateDir = path.join(os.homedir(), '.claude', 'cold-shower')
+  const stateFile = path.join(stateDir, 'state.json')
+  try {
+    fs.mkdirSync(stateDir, { recursive: true })
+    let state = {}
+    try { state = JSON.parse(fs.readFileSync(stateFile, 'utf8')) } catch {}
+    state.lastHeartbeat = new Date().toISOString()
+    fs.writeFileSync(stateFile, JSON.stringify(state, null, 2))
+  } catch {}
+}
+
 function main(data) {
   const toolName = data.tool_name || ''
   const toolInput = data.tool_input || {}
@@ -164,6 +176,7 @@ function main(data) {
   }
 
   // Allow the edit
+  writeHeartbeat()
   process.exit(0)
 }
 

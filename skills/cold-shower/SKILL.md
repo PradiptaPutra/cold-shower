@@ -1,10 +1,11 @@
 ---
 name: cold-shower
 description: |
-  Three modes, one skill. Auto-triggers on what you say — no commands to memorize.
+  Four modes, one skill. Auto-triggers on what you say — no commands to memorize.
   🔍 AUDIT: 6 parallel audits (LLM costs, AI security, code health, deps, prod readiness, git/devops) → Vibe Score 0-100.
   📋 PLAN-GATE: generates structured plan (files to touch, rollback, pre-mortem) then PreToolUse hook blocks all edits until user types APPROVED.
   🧠 RECALL: saves decisions + WHY, fragile file warnings, bug history to local brain files; grep-based retrieval across sessions.
+  📅 DAILY BRIEF: auto-injects at session start after a gap/new day — shows what you left off, files touched, decisions made last session. No command needed.
   Emergency mode auto-activates when app is actively failing under traffic.
 
   Trigger on: "audit my codebase", "is this ready to ship", "cold shower", "reality check",
@@ -12,15 +13,17 @@ description: |
   "app crashed under traffic", "vibe code mess", "/cold-shower",
   "implement X", "add X", "fix X", "refactor X", "build X",
   "remember this", "what did we decide", "save this decision".
+  The daily brief is AUTOMATIC — fires on SessionStart hook when date changed or >4h gap. No trigger phrase needed.
 tools: Read, Write, Bash, Grep, Glob
 ---
 
 # cold-shower v2 — Reality Check for Vibe-Coded Apps
 
-Three modes, one skill:
+Four modes, one skill:
 - 🔍 AUDIT: 6 parallel audits (LLM costs, AI security, code health, deps, prod readiness, git/devops) → Vibe Score 0-100
 - 📋 PLAN-GATE: structured implementation plan → PreToolUse hook blocks edits until approved  
 - 🧠 RECALL: persistent second brain → decisions, fragile files, bug history across sessions
+- 📅 DAILY BRIEF: auto-injects at session start after a gap/new day — shows what you left off, files touched, decisions made last session. No command needed.
 
 ---
 
