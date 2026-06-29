@@ -124,12 +124,23 @@ try {
   if (progressContent && isNewSession(lastWorkedOn, today)) {
     const inProgress = extractSection(body, 'In Progress')
     const decisions = extractSection(body, 'Decisions')
-    let ctx = '\n\n## 🧊 DAILY BRIEF CONTEXT\n'
-    if (lastWorkedOn) ctx += `Last session: ${lastWorkedOn} (${formatTimeAgo(lastWorkedOn)})\n`
-    if (branch) ctx += `Branch: ${branch}\n`
-    if (filesModified && filesModified.length) ctx += `Files touched: ${filesModified.join(', ')}\n`
-    if (inProgress && !inProgress.startsWith('(none')) ctx += `\nIn progress:\n${inProgress}\n`
-    if (decisions && !decisions.startsWith('(none')) ctx += `\nDecisions:\n${decisions}\n`
+    const timeAgo = lastWorkedOn ? formatTimeAgo(lastWorkedOn) : null
+    const hasItems = (inProgress && !inProgress.startsWith('(none')) || (filesModified && filesModified.length > 0)
+
+    let ctx = '\n\n[COLD-SHOWER DAILY BRIEF — MANDATORY FIRST RESPONSE]\n'
+    ctx += `Your FIRST response this session MUST acknowledge this brief. Do NOT just say "Hey" or "Hi".\n`
+    if (hasItems) {
+      ctx += `Say: "Welcome back to ${projectName}. Last session${timeAgo ? ` was ${timeAgo} ago` : ''} on branch ${branch || 'unknown'}."\n`
+      ctx += `Then name the most important in-progress item and offer to continue it.\n`
+    } else {
+      ctx += `Say: "Welcome back to ${projectName}. Last session${timeAgo ? ` was ${timeAgo} ago` : ''} on branch ${branch || 'unknown'}. No tasks were captured yet — what are you building today?"\n`
+    }
+    ctx += `\n--- session data ---\n`
+    if (lastWorkedOn) ctx += `last_session: ${lastWorkedOn} (${timeAgo})\n`
+    if (branch) ctx += `branch: ${branch}\n`
+    if (filesModified && filesModified.length) ctx += `files_touched: ${filesModified.join(', ')}\n`
+    if (inProgress && !inProgress.startsWith('(none')) ctx += `in_progress:\n${inProgress}\n`
+    if (decisions && !decisions.startsWith('(none')) ctx += `decisions:\n${decisions}\n`
     process.stdout.write(ctx)
   }
 } catch {}
