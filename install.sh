@@ -20,7 +20,8 @@ echo "✓ Hooks copied"
 
 cp "$SCRIPT_DIR/hooks/gate.js" "$HOOKS_DIR/cold-shower-gate.js"
 cp "$SCRIPT_DIR/hooks/capture.js" "$HOOKS_DIR/cold-shower-capture.js"
-echo "✓ New hooks copied (gate + capture)"
+cp "$SCRIPT_DIR/hooks/brief.js" "$HOOKS_DIR/cold-shower-brief.js"
+echo "✓ New hooks copied (gate + capture + brief)"
 
 node - <<EOF
 const fs = require('fs')
@@ -61,6 +62,29 @@ EOF
 
 mkdir -p "$HOME/.claude/brain"
 echo "✓ Brain directories created"
+
+# Shell wrapper — shows brief in terminal before claude starts
+SHELL_CONFIG=""
+if [ -f "$HOME/.zshrc" ]; then SHELL_CONFIG="$HOME/.zshrc"
+elif [ -f "$HOME/.bashrc" ]; then SHELL_CONFIG="$HOME/.bashrc"
+fi
+
+if [ -n "$SHELL_CONFIG" ]; then
+  if ! grep -q "cold-shower-brief" "$SHELL_CONFIG" 2>/dev/null; then
+    cat >> "$SHELL_CONFIG" << 'SHELL_FUNC'
+
+# cold-shower: show daily brief before session starts
+function claude() {
+  node "$HOME/.claude/hooks/cold-shower-brief.js" 2>/dev/null || true
+  command claude "$@"
+}
+SHELL_FUNC
+    echo "✓ Shell wrapper added to $SHELL_CONFIG"
+    echo "  Run: source $SHELL_CONFIG  (or open a new terminal)"
+  else
+    echo "✓ Shell wrapper already in $SHELL_CONFIG"
+  fi
+fi
 
 echo ""
 echo "cold-shower v2 installed."

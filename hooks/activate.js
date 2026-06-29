@@ -46,21 +46,11 @@ function getTodayLocal() {
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
 }
 
-function shouldShowBrief(projectName, lastWorkedOn, todayStr) {
+function isNewSession(lastWorkedOn, todayStr) {
   if (!lastWorkedOn) return false
-  // new day or >4h gap — derived from per-project lastWorkedOn, not global state
   const lastDate = lastWorkedOn.slice(0, 10)
   const gapMs = Date.now() - new Date(lastWorkedOn).getTime()
-  if (lastDate === todayStr && gapMs <= 4 * 60 * 60 * 1000) return false
-  // project-scoped atomic lock — one show per project per day
-  const stateDir = path.join(os.homedir(), '.claude', 'cold-shower')
-  const lockFile = path.join(stateDir, `brief-lock-${projectName}-${todayStr}.lock`)
-  try {
-    fs.mkdirSync(stateDir, { recursive: true })
-    const fd = fs.openSync(lockFile, 'wx')
-    fs.closeSync(fd)
-    return true
-  } catch { return false }
+  return lastDate !== todayStr || gapMs > 4 * 60 * 60 * 1000
 }
 
 function formatTimeAgo(isoStr) {
@@ -78,18 +68,6 @@ function formatTimeAgo(isoStr) {
   } catch { return '' }
 }
 
-function formatSessionTime(isoStr) {
-  try {
-    const d = new Date(isoStr)
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-    const day = days[d.getDay()]
-    let hours = d.getHours()
-    const mins = String(d.getMinutes()).padStart(2, '0')
-    const ampm = hours >= 12 ? 'PM' : 'AM'
-    hours = hours % 12 || 12
-    return `${day} ${hours}:${mins} ${ampm}`
-  } catch { return '' }
-}
 
 function parseFrontmatter(content) {
   const result = { lastWorkedOn: null, branch: null, filesModified: [], status: null, body: '' }
@@ -142,54 +120,16 @@ try {
 
   const { lastWorkedOn, branch, filesModified, body } = progressContent ? parseFrontmatter(progressContent) : {}
 
-  if (progressContent && shouldShowBrief(projectName, lastWorkedOn, today)) {
-
-    const now = new Date()
-    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December']
-    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-    const headerDate = `${dayNames[now.getDay()]} ${monthNames[now.getMonth()]} ${now.getDate()}`
-
-    const W = 60
-    const pad = (s, w) => s + ' '.repeat(Math.max(0, w - s.length))
-    const row = (s) => `│  ${pad(s, W - 4)}│\n`
-    const div = `├${'─'.repeat(W - 2)}┤\n`
-    const top = `┌${'─'.repeat(W - 2)}┐\n`
-    const bot = `└${'─'.repeat(W - 2)}┘\n`
-
-    const sessionTime = lastWorkedOn ? formatSessionTime(lastWorkedOn) : null
-    const timeAgo = lastWorkedOn ? formatTimeAgo(lastWorkedOn) : null
-
-    let brief = '\n\n'
-    brief += top
-    brief += row(`🧊 DAILY BRIEF — ${projectName} — ${headerDate}`)
-    if (sessionTime) brief += row(`Last session: ${sessionTime}${timeAgo ? ` (${timeAgo})` : ''}`)
-    if (branch) brief += row(`Branch: ${branch}`)
-    brief += div
-
+  // Inject session context for Claude — visual display handled by brief.js pre-launch
+  if (progressContent && isNewSession(lastWorkedOn, today)) {
     const inProgress = extractSection(body, 'In Progress')
-    if (inProgress) {
-      brief += row('Left off:')
-      truncateLines(inProgress, 5).split('\n').filter(l => l.trim()).forEach(l => { brief += row(`  ${l}`) })
-    }
-
-    if (filesModified.length > 0) {
-      if (inProgress) brief += div
-      brief += row('Files touched:')
-      filesModified.slice(0, 5).forEach(f => { brief += row(`  · ${f}`) })
-    }
-
     const decisions = extractSection(body, 'Decisions')
-    if (decisions) {
-      brief += div
-      brief += row('Decisions:')
-      truncateLines(decisions, 3).split('\n').filter(l => l.trim()).forEach(l => { brief += row(`  ${l}`) })
-    }
-
-    brief += div
-    brief += row("Ask: 'what should I work on today' for today's plan")
-    brief += bot
-
-    process.stderr.write(brief)  // show instantly in terminal before user types
-    process.stdout.write(brief)  // inject into Claude context
+    let ctx = '\n\n## 🧊 DAILY BRIEF CONTEXT\n'
+    if (lastWorkedOn) ctx += `Last session: ${lastWorkedOn} (${formatTimeAgo(lastWorkedOn)})\n`
+    if (branch) ctx += `Branch: ${branch}\n`
+    if (filesModified && filesModified.length) ctx += `Files touched: ${filesModified.join(', ')}\n`
+    if (inProgress && !inProgress.startsWith('(none')) ctx += `\nIn progress:\n${inProgress}\n`
+    if (decisions && !decisions.startsWith('(none')) ctx += `\nDecisions:\n${decisions}\n`
+    process.stdout.write(ctx)
   }
 } catch {}
