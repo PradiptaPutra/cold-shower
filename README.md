@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.svg" width="140" alt="cold-shower mascot — shocked dev under cold shower"/>
+<img src="assets/logo.png" width="160" alt="cold-shower — frozen terminal cube"/>
 
 # cold-shower
 
