@@ -72,14 +72,34 @@ try {
       const timeAgo = lastWorkedOn ? formatTimeAgo(lastWorkedOn) : null
       const hasItems = (inProgress && !inProgress.startsWith('(none')) || (filesModified && filesModified.length > 0)
 
+      const now = new Date()
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+      const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+      const headerDate = `${dayNames[now.getDay()]} ${months[now.getMonth()]} ${now.getDate()}`
+
       let ctx = '[COLD-SHOWER DAILY BRIEF — MANDATORY FIRST RESPONSE]\n'
-      ctx += `INSTRUCTION: Your first reply this session MUST start with the brief. Never just say "Hey" or "Hi".\n`
-      if (hasItems) {
-        ctx += `Required opening: "Welcome back to ${projectName}. Last session was ${timeAgo || 'a while'} ago on branch ${branch || 'unknown'}."\n`
-        ctx += `Then name the top in-progress item and offer to continue.\n`
+      ctx += `INSTRUCTION: Your first reply MUST be exactly this box (use these box-drawing chars verbatim):\n\n`
+      ctx += `┌──────────────────────────────────────────────────────────┐\n`
+      ctx += `│  🧊 DAILY BRIEF — ${projectName} — ${headerDate}\n`
+      ctx += `│  Last session: ${timeAgo || 'unknown'} · Branch: ${branch || 'unknown'}\n`
+      ctx += `├──────────────────────────────────────────────────────────┤\n`
+      if (hasItems && inProgress && !inProgress.startsWith('(none')) {
+        ctx += `│  Left off:\n`
+        inProgress.split('\n').filter(l => l.trim()).slice(0, 4).forEach(l => {
+          ctx += `│    ${l}\n`
+        })
       } else {
-        ctx += `Required opening: "Welcome back to ${projectName}. Last session was ${timeAgo || 'a while'} ago on branch ${branch || 'unknown'}. What are you building today?"\n`
+        ctx += `│  Left off: (start coding to capture tasks)\n`
       }
+      if (filesModified && filesModified.length) {
+        ctx += `├──────────────────────────────────────────────────────────┤\n`
+        ctx += `│  Files touched:\n`
+        filesModified.slice(0, 4).forEach(f => { ctx += `│    · ${f}\n` })
+      }
+      ctx += `├──────────────────────────────────────────────────────────┤\n`
+      ctx += `│  Type 'what should I work on today' for a plan           │\n`
+      ctx += `└──────────────────────────────────────────────────────────┘\n\n`
+      ctx += `After the box, ask what they want to work on.\n`
       ctx += `last_session: ${lastWorkedOn || 'unknown'}\n`
       ctx += `branch: ${branch || 'unknown'}\n`
       if (filesModified && filesModified.length) ctx += `files_touched: ${filesModified.join(', ')}\n`
