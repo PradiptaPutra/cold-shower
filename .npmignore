@@ -1,0 +1,9 @@
+.git/
+assets/
+*.png
+*.svg
+node_modules/
+.gitignore
+.plan-gate/
+.cold-shower/
+install.sh

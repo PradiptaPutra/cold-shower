@@ -1,0 +1,25 @@
+{
+  "name": "cold-shower",
+  "version": "2.0.0",
+  "description": "Reality check for vibe-coded apps. 6 audits + plan-gate + second brain for Claude Code.",
+  "bin": {
+    "cold-shower": "./bin/cold-shower.js"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    "hooks/",
+    ".claude-plugin/"
+  ],
+  "keywords": ["claude-code", "claude", "skill", "vibe-coding", "ai", "security", "audit", "plan-gate"],
+  "author": "PradiptaPutra",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PradiptaPutra/cold-shower.git"
+  },
+  "homepage": "https://github.com/PradiptaPutra/cold-shower",
+  "engines": {
+    "node": ">=18"
+  }
+}
