@@ -168,34 +168,45 @@ try {
     const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
     const headerDate = `${dayNames[now.getDay()]} ${monthNames[now.getMonth()]} ${now.getDate()}`
 
-    let brief = `\n\n## 🧊 DAILY BRIEF — ${projectName} — ${headerDate}\n`
+    const W = 60
+    const pad = (s, w) => s + ' '.repeat(Math.max(0, w - s.length))
+    const row = (s) => `│  ${pad(s, W - 4)}│\n`
+    const div = `├${'─'.repeat(W - 2)}┤\n`
+    const top = `┌${'─'.repeat(W - 2)}┐\n`
+    const bot = `└${'─'.repeat(W - 2)}┘\n`
 
-    if (lastWorkedOn) {
-      const sessionTime = formatSessionTime(lastWorkedOn)
-      const timeAgo = formatTimeAgo(lastWorkedOn)
-      brief += `Last session: ${sessionTime}${timeAgo ? ` (${timeAgo})` : ''}\n`
-    }
+    const sessionTime = lastWorkedOn ? formatSessionTime(lastWorkedOn) : null
+    const timeAgo = lastWorkedOn ? formatTimeAgo(lastWorkedOn) : null
 
-    if (branch) {
-      brief += `Branch: ${branch}\n`
-    }
+    let brief = '\n\n'
+    brief += top
+    brief += row(`🧊 DAILY BRIEF — ${projectName} — ${headerDate}`)
+    if (sessionTime) brief += row(`Last session: ${sessionTime}${timeAgo ? ` (${timeAgo})` : ''}`)
+    if (branch) brief += row(`Branch: ${branch}`)
+    brief += div
 
     const inProgress = extractSection(body, 'In Progress')
     if (inProgress) {
-      brief += `\n### Left off:\n${truncateLines(inProgress, 8)}\n`
+      brief += row('Left off:')
+      truncateLines(inProgress, 5).split('\n').filter(l => l.trim()).forEach(l => { brief += row(`  ${l}`) })
     }
 
     if (filesModified.length > 0) {
-      brief += `\n### Files touched last session:\n`
-      filesModified.slice(0, 6).forEach(f => { brief += `- ${f}\n` })
+      if (inProgress) brief += div
+      brief += row('Files touched:')
+      filesModified.slice(0, 5).forEach(f => { brief += row(`  · ${f}`) })
     }
 
     const decisions = extractSection(body, 'Decisions')
     if (decisions) {
-      brief += `\n### Decisions made:\n${truncateLines(decisions, 4)}\n`
+      brief += div
+      brief += row('Decisions:')
+      truncateLines(decisions, 3).split('\n').filter(l => l.trim()).forEach(l => { brief += row(`  ${l}`) })
     }
 
-    brief += `\nType 'what should I work on today' for a suggested plan based on this.\n`
+    brief += div
+    brief += row("Ask: 'what should I work on today' for today's plan")
+    brief += bot
 
     process.stdout.write(brief)
   }

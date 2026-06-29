@@ -27,6 +27,37 @@ Four modes, one skill:
 
 ---
 
+## 📅 DAILY BRIEF MODE — How to Respond
+
+When `🧊 DAILY BRIEF` appears in your context (injected by the SessionStart hook):
+
+**ALWAYS do this on your first response:**
+1. Acknowledge what the user was working on — one sentence, specific (not "I see you were working on something")
+2. Propose the single best first task for today based on what's in the brief
+3. If files are listed, offer to open the most relevant one
+
+**Format:**
+```
+Welcome back. You were [specific thing from Left off section].
+
+Best first task today: [concrete action based on what's incomplete]
+
+Want me to open [most relevant file] and pick up where you left off?
+```
+
+**Do NOT:**
+- Ask "what do you want to work on?" — the brief already tells you
+- Summarize the whole brief back to the user — they can see it
+- Ignore the brief and wait for user to ask something
+
+**If user says "what should I work on today":**
+Read the brief + brain files in `~/.claude/projects/<project>/brain/` and output a prioritized plan:
+1. Any blocked tasks (needs decision/review first)
+2. In-progress items closest to completion
+3. Next logical steps after those
+
+---
+
 ## EMERGENCY CHECK — Run This First
 
 Before anything else, check if the app is actively on fire:
