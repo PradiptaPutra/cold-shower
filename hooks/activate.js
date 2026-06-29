@@ -46,39 +46,21 @@ function getTodayLocal() {
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
 }
 
-function isNewDay() {
-  const stateFile = path.join(os.homedir(), '.claude', 'cold-shower', 'state.json')
-  let state = {}
-  try { state = JSON.parse(fs.readFileSync(stateFile, 'utf8')) } catch {}
-  const today = getTodayLocal()
-  if (state.briefDate !== today) return true
-  const lastActivity = state.lastEnd || state.lastHeartbeat
-  if (lastActivity) {
-    const gapMs = Date.now() - new Date(lastActivity).getTime()
-    if (gapMs > 4 * 60 * 60 * 1000) return true
-  }
-  return false
-}
-
-function claimBriefSlot(todayStr) {
+function shouldShowBrief(projectName, lastWorkedOn, todayStr) {
+  if (!lastWorkedOn) return false
+  // new day or >4h gap — derived from per-project lastWorkedOn, not global state
+  const lastDate = lastWorkedOn.slice(0, 10)
+  const gapMs = Date.now() - new Date(lastWorkedOn).getTime()
+  if (lastDate === todayStr && gapMs <= 4 * 60 * 60 * 1000) return false
+  // project-scoped atomic lock — one show per project per day
   const stateDir = path.join(os.homedir(), '.claude', 'cold-shower')
-  const lockFile = path.join(stateDir, `brief-lock-${todayStr}.lock`)
+  const lockFile = path.join(stateDir, `brief-lock-${projectName}-${todayStr}.lock`)
   try {
     fs.mkdirSync(stateDir, { recursive: true })
-    const fd = fs.openSync(lockFile, 'wx') // atomic — throws EEXIST if already claimed
+    const fd = fs.openSync(lockFile, 'wx')
     fs.closeSync(fd)
     return true
   } catch { return false }
-}
-
-function markBriefShown(todayStr) {
-  const stateFile = path.join(os.homedir(), '.claude', 'cold-shower', 'state.json')
-  try {
-    let state = {}
-    try { state = JSON.parse(fs.readFileSync(stateFile, 'utf8')) } catch {}
-    state.briefDate = todayStr
-    fs.writeFileSync(stateFile, JSON.stringify(state, null, 2))
-  } catch {}
 }
 
 function formatTimeAgo(isoStr) {
@@ -158,10 +140,9 @@ try {
   let progressContent = null
   try { progressContent = fs.readFileSync(progressFile, 'utf8') } catch {}
 
-  if (progressContent && isNewDay() && claimBriefSlot(today)) {
-    markBriefShown(today)
+  const { lastWorkedOn, branch, filesModified, body } = progressContent ? parseFrontmatter(progressContent) : {}
 
-    const { lastWorkedOn, branch, filesModified, body } = parseFrontmatter(progressContent)
+  if (progressContent && shouldShowBrief(projectName, lastWorkedOn, today)) {
 
     const now = new Date()
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December']
