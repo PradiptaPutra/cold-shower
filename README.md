@@ -65,10 +65,11 @@ Works on every Claude Code project you open after that. **No commands to memoriz
 
 | Hook | Event | Does |
 |------|-------|------|
-| `activate.js` | `SessionStart` | Injects skill + loads brain memories |
+| `brief.js` | pre-launch (shell wrapper) | Prints daily brief box before Claude starts |
+| `activate.js` | `SessionStart` | Injects brief + skill + brain memories into Claude context |
 | `trigger.js` | `UserPromptSubmit` | Detects intent, routes to correct mode |
-| `gate.js` | `PreToolUse` | Blocks edits until plan approved |
-| `capture.js` | `Stop` | Suggests memories to save at session end |
+| `gate.js` | `PreToolUse` | Blocks edits until plan approved · writes heartbeat |
+| `capture.js` | `Stop` | Extracts files/decisions/tasks → writes progress.md + state.json |
 
 ---
 
@@ -168,13 +169,14 @@ Ran cold-shower across **15 public JS/TS repos**. [Full results →](BENCHMARKS.
 
 ## 📅 Daily Brief — never start from zero again
 
-Close your laptop. Open it tomorrow. cold-shower shows exactly where you left off — automatically.
+Close your laptop. Open it tomorrow. cold-shower shows exactly where you left off — automatically. No command needed.
+
+**Terminal** (`claude` in shell) — box appears before Claude loads:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  🧊 DAILY BRIEF — myapp — Monday Jun 30                  │
-│  Last session: Sunday 11:47 PM (8h 12m ago)              │
-│  Branch: feature/auth-refactor                           │
+│  Last session: 8h ago · Branch: feature/auth-refactor    │
 ├──────────────────────────────────────────────────────────┤
 │  Left off:                                               │
 │    - implementing stripe webhook handler                 │
@@ -184,24 +186,35 @@ Close your laptop. Open it tomorrow. cold-shower shows exactly where you left of
 │    · src/api/webhooks.ts                                 │
 │    · src/lib/stripe.ts                                   │
 ├──────────────────────────────────────────────────────────┤
-│  Ask: 'what should I work on today' for today's plan     │
+│  Type 'what should I work on today' for a plan           │
 └──────────────────────────────────────────────────────────┘
 ```
 
-Claude's first response:
-> Welcome back. You were implementing the stripe webhook handler with the refund flow still incomplete.
->
-> Best first task today: finish the refund test in `src/lib/stripe.ts` — it's 60% done.
->
-> Want me to open it and pick up where you left off?
+**Desktop app** — Claude's first response (type anything):
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  🧊 DAILY BRIEF — myapp — Monday Jun 30
+│  Last session: 8h ago · Branch: feature/auth-refactor
+├──────────────────────────────────────────────────────────┤
+│  Left off:
+│    - implementing stripe webhook handler
+│    - still need to test refund flow
+├──────────────────────────────────────────────────────────┤
+│  Type 'what should I work on today' for a plan           │
+└──────────────────────────────────────────────────────────┘
+
+What are you building today?
+```
 
 **How it works:**
-- `capture.js` (Stop hook) — at session end, extracts files touched, decisions made, in-progress items → writes `~/.claude/projects/<project>/brain/progress.md`
-- `activate.js` (SessionStart hook) — detects new day OR >4h gap → reads progress.md → injects brief
-- Atomic lock (`brief-lock-YYYY-MM-DD.lock`) — if you have 3 terminals open, only 1 shows the box. All 3 have the context.
-- Project-scoped — `/my-app` and `/deep-research` each get their own brief
+- `capture.js` (Stop hook) — session end → extracts files touched, in-progress items, decisions → writes `~/.claude/projects/<project>/brain/progress.md`
+- `brief.js` (pre-launch shell wrapper) — runs before `claude` starts → prints box to terminal → project-scoped atomic lock
+- `activate.js` (SessionStart hook) — injects brief as mandatory first-response instruction into Claude context
+- New day OR >4h gap triggers the brief. Multiple terminals for same project → only 1 shows the box, all have context.
+- Project-scoped — `/my-app` and `/deep-research` each get their own independent brief
 
-**Zero of 6 major AI coding tools do this.** Cursor, Windsurf, GitHub Copilot Workspace, Amp, Kiro, Zed all start from scratch every session.
+**Zero of 6 major AI coding tools do this.** Cursor, Windsurf, GitHub Copilot Workspace, Amp, Kiro, Zed — all start from scratch every session.
 
 ---
 
