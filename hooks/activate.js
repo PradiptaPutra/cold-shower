@@ -208,6 +208,7 @@ try {
     brief += row("Ask: 'what should I work on today' for today's plan")
     brief += bot
 
-    process.stdout.write(brief)
+    process.stderr.write(brief)  // show instantly in terminal before user types
+    process.stdout.write(brief)  // inject into Claude context
   }
 } catch {}
