@@ -17,3 +17,24 @@ const skillPath = locations.find(p => { try { return fs.existsSync(p) } catch { 
 if (!skillPath) process.exit(0)
 
 process.stdout.write(fs.readFileSync(skillPath, 'utf8'))
+
+// Inject recall memories from brain files
+const os = require('os')
+const projectName = path.basename(process.cwd())
+const brainFiles = [
+  path.join(os.homedir(), '.claude', 'brain', 'preferences.md'),
+  path.join(os.homedir(), '.claude', 'projects', projectName, 'brain', 'context.md'),
+  path.join(os.homedir(), '.claude', 'projects', projectName, 'brain', 'avoid.md'),
+  path.join(os.homedir(), '.claude', 'projects', projectName, 'brain', 'decisions.md'),
+]
+const memoryLines = []
+for (const f of brainFiles) {
+  try {
+    const content = fs.readFileSync(f, 'utf8')
+    const headers = content.split('\n').filter(l => l.startsWith('##')).slice(0, 5)
+    if (headers.length > 0) memoryLines.push(...headers)
+  } catch {}
+}
+if (memoryLines.length > 0) {
+  process.stdout.write('\n\n## RECALL: Project Memory\n' + memoryLines.slice(0, 15).join('\n') + '\n')
+}

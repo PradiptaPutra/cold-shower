@@ -896,3 +896,123 @@ const EnvSchema = z.object({
 export const env = EnvSchema.parse(process.env)
 // Add your other required vars — throws at startup if any are missing
 ```
+
+---
+
+## PLAN-GATE — Structured Planning Before Implementation
+
+Auto-activates when user says: "implement X", "add X", "fix X", "create X", "refactor X", "build X"
+
+### When plan-gate is active:
+- gate.js hook blocks all Edit/Write/MultiEdit tool calls
+- Claude MUST generate a structured plan first
+- Edits only allowed after user types `APPROVED`
+- Plan stored at `.plan-gate/plan.md`
+
+### Structured plan format (generate this before any code):
+
+```markdown
+## Plan: [task name]
+
+### Understanding
+- Problem being solved (the WHY, not just the WHAT)
+- Definition of done (behavior, not code description)
+- Out of scope (explicit exclusions)
+
+### Files to Touch
+| File | Lines | Change | Reason |
+|------|-------|--------|--------|
+
+### Files NOT to Touch
+| File | Reason |
+|------|--------|
+
+### Contracts That Cannot Change
+(API signatures, HTTP response codes, DB columns callers depend on)
+
+### Dependency Order
+1. First change (unlocks others)
+2. Second change
+...
+
+### Risk Assessment
+- HIGH: [specific failure mode]
+- MEDIUM: [specific failure mode]
+
+### Pre-Mortem
+"If this fails, the most likely cause is..."
+
+### Rollback
+(exact steps — does it need migration rollback? data backfill?)
+```
+
+### After plan is generated:
+Ask user: **"Review the plan above. Type `APPROVED` to proceed with implementation."**
+
+Do NOT write code, create files, or edit anything until user types APPROVED.
+
+### After implementation:
+Remind user: `"Type re-audit to verify Vibe Score didn't drop."`
+
+### To skip plan-gate for a quick change:
+User can say "skip plan" or delete `.plan-gate/ACTIVE`
+
+---
+
+## RECALL — Persistent Second Brain
+
+Replaces Obsidian for developers who want memory inside their coding workflow.
+
+### Brain file locations:
+```
+~/.claude/brain/                          ← global (all projects)
+  preferences.md                          ← coding style, tool preferences
+
+~/.claude/projects/<project>/brain/       ← project-scoped
+  decisions.md   ← architectural choices + WHY + rejected alternatives
+  avoid.md       ← fragile files/areas — checked by PreToolUse hook before edits
+  bugs.md        ← fixed bugs + how to detect regression
+  context.md     ← domain knowledge, user base, compliance, business context
+  patterns.md    ← code patterns with project-specific examples
+```
+
+### Memory entry format (always include WHY and date):
+```markdown
+## 2026-06-29 · [one-line summary]
+**Decision/Pattern/Bug/Context:** [the WHAT]
+**Why:** [the reason — constraints, rejected alternatives, incidents]
+**Source:** [commit sha, issue #, or "session decision"]
+```
+
+### How to save memories:
+
+**Manual:** User says "remember that..." or "save this decision..." → append to appropriate brain file
+
+**Auto-capture:** Stop hook (capture.js) scans session at end, surfaces 3-5 suggestions
+
+**Anti-regression:** gate.js PreToolUse hook warns before editing files listed in avoid.md
+
+### Recall commands:
+- `"remember [X]"` → save to appropriate brain file
+- `"what did we decide about [X]"` → grep brain files and return matches
+- `"show avoid list"` → read avoid.md
+- `"show context"` → read context.md
+- `"/recall review"` → show memories older than 90 days for staleness review
+- `"forget [X]"` → remove matching entry from brain files
+
+### When user says "remember [X]", classify and save:
+- Architectural choice → `decisions.md`
+- File/area to avoid → `avoid.md` (also triggers gate.js warning on future edits)
+- Bug pattern → `bugs.md`
+- Domain/business context → `context.md`
+- Code pattern → `patterns.md`
+- Personal style → `~/.claude/brain/preferences.md`
+
+### Hard limits (never exceed):
+- Each brain file: 50 lines max → archive oldest to `brain/archive/` when full
+- Session injection: 15 headlines max (~1,500 tokens)
+- Never inject full file content at session start — headers only, full content on demand
+
+### Privacy note:
+Brain files are local only. Never commit `~/.claude/brain/` or `~/.claude/projects/*/brain/` to git.
+Add to .gitignore: `.claude/`

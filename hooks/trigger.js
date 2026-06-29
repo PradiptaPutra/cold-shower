@@ -40,32 +40,124 @@ process.stdin.on('end', () => {
       // Re-audit / score check triggers
       're-audit', 'reaudit', 'check score', 'check my score',
       'did score improve', 'run audit again', 'audit again',
+      // Plan-gate triggers — implementation intent
+      'implement', 'add feature', 'add endpoint', 'add support for',
+      'build this', 'create component', 'create a new', 'create the',
+      'fix this bug', 'fix the bug', 'fix the issue', 'fix the error',
+      'refactor', 'migrate', 'rewrite', 'update the', 'modify the',
+      // Recall triggers — memory commands
+      'remember this', 'remember that', 'save this', 'dont forget',
+      "don't forget", 'recall', 'what did we decide', 'brain dump',
+      '/recall', '/plan',
     ]
 
     const matched = triggers.some(t => prompt.includes(t))
+
     if (!matched) return
 
+    // Detect which mode triggered
+    const planTriggers = ['implement', 'add feature', 'add endpoint', 'add support for',
+      'build this', 'create component', 'create a new', 'create the',
+      'fix this bug', 'fix the bug', 'fix the issue', 'fix the error',
+      'refactor', 'migrate', 'rewrite', 'update the', 'modify the']
+    const recallTriggers = ['remember this', 'remember that', 'save this', 'dont forget',
+      "don't forget", 'recall', 'what did we decide', 'brain dump', '/recall']
+    const auditTriggers = ['cold shower', 'cold-shower', 'audit', 'vibe score',
+      'ready to ship', 'ready to deploy', 'about to deploy', 'about to push',
+      're-audit', 'reaudit', 'check score']
+
+    const isPlan = planTriggers.some(t => prompt.includes(t))
+    const isRecall = recallTriggers.some(t => prompt.includes(t))
+    const isAudit = auditTriggers.some(t => prompt.includes(t))
+
+    // Load score history for audit mode
     const scoreHistoryPath = require('path').join(process.cwd(), '.cold-shower', 'score-history.json')
     let scoreHistory = []
     try { scoreHistory = JSON.parse(require('fs').readFileSync(scoreHistoryPath, 'utf8')) } catch {}
     const lastScore = scoreHistory.length > 0 ? scoreHistory[scoreHistory.length - 1] : null
     const scoreContext = lastScore
-      ? `Last Vibe Score: ${lastScore.score}/100 (${lastScore.grade}) on ${lastScore.date}. Show this at start and compare after new audit.`
-      : 'No previous Vibe Score found — this is first audit.'
+      ? `Last Vibe Score: ${lastScore.score}/100 (${lastScore.grade}) on ${lastScore.date}.`
+      : 'No previous Vibe Score.'
 
-    process.stdout.write(JSON.stringify({
-      additionalContext: [
+    // Load recall memories
+    const path = require('path')
+    const os = require('os')
+    const projectName = path.basename(process.cwd())
+    const brainDir = path.join(os.homedir(), '.claude', 'brain')
+    const projectBrainDir = path.join(os.homedir(), '.claude', 'projects', projectName, 'brain')
+    let recallContext = ''
+    try {
+      const files = ['context.md', 'decisions.md', 'avoid.md', 'bugs.md']
+      const lines = []
+      for (const f of files) {
+        try {
+          const content = require('fs').readFileSync(path.join(projectBrainDir, f), 'utf8')
+          lines.push(...content.split('\n').filter(l => l.startsWith('##')).slice(0, 3))
+        } catch {}
+      }
+      if (lines.length > 0) recallContext = '\nRECALL CONTEXT:\n' + lines.slice(0, 8).join('\n')
+    } catch {}
+
+    // Create plan-gate ACTIVE marker if implementation intent
+    if (isPlan && !isAudit) {
+      try {
+        const fs = require('fs')
+        fs.mkdirSync(path.join(process.cwd(), '.plan-gate'), { recursive: true })
+        fs.writeFileSync(path.join(process.cwd(), '.plan-gate', 'ACTIVE'), new Date().toISOString())
+        // Remove any stale approval
+        try { fs.unlinkSync(path.join(process.cwd(), '.plan-gate', 'APPROVED')) } catch {}
+      } catch {}
+    }
+
+    let additionalContext = ''
+
+    if (isRecall && !isPlan && !isAudit) {
+      additionalContext = [
+        'COLD-SHOWER RECALL MODE',
+        recallContext,
+        'User wants to manage memories. Available commands:',
+        '- "remember [decision/pattern/bug/context]" → save to brain',
+        '- "what did we decide about X" → search brain files',
+        '- "show avoid list" → show fragile files',
+        '- "/recall review" → review memories older than 90 days',
+        'Brain files: ~/.claude/brain/ (global) and ~/.claude/projects/' + projectName + '/brain/ (project)',
+      ].join('\n')
+    } else if (isPlan && !isAudit) {
+      additionalContext = [
+        'COLD-SHOWER PLAN-GATE ACTIVATED',
+        recallContext,
+        'User wants to implement something. Generate a structured plan BEFORE writing any code:',
+        '',
+        '## Plan: [task name]',
+        '### Understanding — problem, definition of done, out of scope',
+        '### Files to Touch — table: file | lines | change type | reason',
+        '### Files NOT to Touch — table: file | reason (check recall avoid.md for fragile files)',
+        '### Contracts That Cannot Change — API signatures, response shapes callers depend on',
+        '### Dependency Order — numbered, which changes unlock others',
+        '### Risk Assessment — HIGH/MEDIUM/LOW with specific failure mode',
+        '### Pre-Mortem — "If this fails, most likely cause is..."',
+        '### Rollback — exact steps to undo, does it need migration rollback?',
+        '',
+        'After generating the plan: ask user "Type APPROVED to proceed with implementation."',
+        'Do NOT write any code or edit any files until user types APPROVED.',
+        'Plan-gate is active — edits are blocked until approved.',
+      ].join('\n')
+    } else {
+      // Audit mode (default)
+      additionalContext = [
         'COLD-SHOWER SKILL ACTIVATED',
         scoreContext,
-        'User message matches a cold-shower trigger. Run the workflow:',
+        recallContext,
+        'Run the audit workflow:',
         '1. Emergency check — app actively failing? Jump to EMERGENCY MODE.',
-        '2. Phase 0: detect stack (JS/PY, framework, AI, DB, package manager). Read .cold-shower/score-history.json if exists.',
-        '3. Phase 1: run applicable audits in parallel (A=LLM costs, B=AI security, C=code health, D=dependencies, E=prod readiness, F=git/devops).',
-        '4. Phase 2: compute Vibe Score, print unified health report. Write score to .cold-shower/score-history.json.',
-        '5. Phase 3: ask which fix sprint to start. After sprint completes, remind user: "Type re-audit to measure improvement."',
-        'Do not wait for /cold-shower — start the audit now.',
-      ].join('\n'),
-    }))
+        '2. Phase 0: detect stack.',
+        '3. Phase 1: run audits A-F in parallel.',
+        '4. Phase 2: compute Vibe Score, write to .cold-shower/score-history.json.',
+        '5. Phase 3: ask which fix sprint. After sprint: remind user to type re-audit.',
+      ].join('\n')
+    }
+
+    process.stdout.write(JSON.stringify({ additionalContext }))
   } catch {
     // Silent fail — never break the user session
   }
