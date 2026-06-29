@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="96" fill="#0f172a" stroke="#1e40af" stroke-width="3"/>
+
+  <!-- Showerhead pipe -->
+  <rect x="60" y="18" width="8" height="32" rx="3" fill="#60a5fa"/>
+  <!-- Showerhead body -->
+  <rect x="44" y="46" width="40" height="14" rx="4" fill="#3b82f6"/>
+  <!-- Showerhead holes -->
+  <circle cx="52" cy="53" r="2" fill="#0f172a"/>
+  <circle cx="60" cy="53" r="2" fill="#0f172a"/>
+  <circle cx="68" cy="53" r="2" fill="#0f172a"/>
+  <circle cx="76" cy="53" r="2" fill="#0f172a"/>
+
+  <!-- Water droplets -->
+  <line x1="52" y1="62" x2="48" y2="80" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <line x1="60" y1="62" x2="58" y2="82" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <line x1="68" y1="62" x2="68" y2="84" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <line x1="76" y1="62" x2="78" y2="80" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <!-- Second wave droplets -->
+  <line x1="50" y1="84" x2="46" y2="100" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="59" y1="86" x2="57" y2="104" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="68" y1="88" x2="68" y2="106" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="79" y1="84" x2="81" y2="100" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Dev head -->
+  <circle cx="128" cy="78" r="24" fill="#fbbf24"/>
+  <!-- Hair -->
+  <path d="M108 68 Q128 48 148 68" fill="#1e293b" stroke="none"/>
+  <rect x="106" y="58" width="44" height="14" rx="7" fill="#1e293b"/>
+
+  <!-- Shocked eyes (wide open) -->
+  <circle cx="120" cy="76" r="6" fill="white"/>
+  <circle cx="136" cy="76" r="6" fill="white"/>
+  <circle cx="121" cy="77" r="3" fill="#1e293b"/>
+  <circle cx="137" cy="77" r="3" fill="#1e293b"/>
+  <!-- Pupils -->
+  <circle cx="120" cy="75" r="1.5" fill="#000"/>
+  <circle cx="136" cy="75" r="1.5" fill="#000"/>
+
+  <!-- Shock eyebrows raised -->
+  <path d="M113 67 Q120 62 127 67" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M129 67 Q136 62 143 67" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Open mouth (shocked O) -->
+  <ellipse cx="128" cy="91" rx="7" ry="8" fill="#1e293b"/>
+  <ellipse cx="128" cy="93" rx="5" ry="5" fill="#dc2626"/>
+
+  <!-- Body / shoulders -->
+  <rect x="104" y="102" width="48" height="50" rx="8" fill="#3b82f6"/>
+  <!-- Laptop -->
+  <rect x="108" y="114" width="40" height="26" rx="3" fill="#1e293b"/>
+  <rect x="110" y="116" width="36" height="20" rx="2" fill="#0f172a"/>
+  <!-- Code lines on screen -->
+  <line x1="113" y1="120" x2="130" y2="120" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="113" y1="124" x2="125" y2="124" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="113" y1="128" x2="132" y2="128" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Laptop base -->
+  <rect x="108" y="140" width="40" height="3" rx="1" fill="#374151"/>
+
+  <!-- Water splash hitting head -->
+  <circle cx="105" cy="75" r="3" fill="#bfdbfe" opacity="0.7"/>
+  <circle cx="113" cy="60" r="2" fill="#93c5fd" opacity="0.8"/>
+  <circle cx="98" cy="82" r="2" fill="#bfdbfe" opacity="0.6"/>
+
+  <!-- Shock lines -->
+  <line x1="150" y1="58" x2="158" y2="52" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+  <line x1="153" y1="68" x2="162" y2="66" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+  <line x1="148" y1="52" x2="152" y2="44" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Vibe Score badge -->
+  <rect x="56" y="158" width="88" height="26" rx="8" fill="#1e40af"/>
+  <text x="100" y="175" font-family="monospace" font-size="13" font-weight="bold" fill="white" text-anchor="middle">VIBE SCORE</text>
+</svg>

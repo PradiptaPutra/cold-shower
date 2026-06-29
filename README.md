@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🚿 cold-shower
+<img src="assets/logo.svg" width="140" alt="cold-shower mascot — shocked dev under cold shower"/>
+
+# cold-shower
 
 **Reality check for vibe-coded apps.**
 
