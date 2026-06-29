@@ -29,32 +29,29 @@ Four modes, one skill:
 
 ## 📅 DAILY BRIEF MODE — How to Respond
 
-When `🧊 DAILY BRIEF` appears in your context (injected by the SessionStart hook):
+When `## 🧊 DAILY BRIEF CONTEXT` appears in your system context:
 
-**ALWAYS do this on your first response:**
-1. Acknowledge what the user was working on — one sentence, specific (not "I see you were working on something")
-2. Propose the single best first task for today based on what's in the brief
-3. If files are listed, offer to open the most relevant one
+**ALWAYS lead your FIRST response with the brief — even if the user just said "hi":**
 
-**Format:**
+If in-progress items exist:
 ```
-Welcome back. You were [specific thing from Left off section].
-
-Best first task today: [concrete action based on what's incomplete]
-
-Want me to open [most relevant file] and pick up where you left off?
+Welcome back. Last session you were working on [specific item].
+Best first task: [concrete next action]. Want me to open [file]?
 ```
 
-**Do NOT:**
-- Ask "what do you want to work on?" — the brief already tells you
-- Summarize the whole brief back to the user — they can see it
-- Ignore the brief and wait for user to ask something
+If no in-progress items captured yet (empty session):
+```
+Welcome back to [project]. Last session: [time ago] on branch [branch].
+No tasks were captured yet — what are you building today?
+```
+
+**NEVER:**
+- Say just "Hey." or "Hi." when DAILY BRIEF CONTEXT is present
+- Wait for the user to ask about their prior work
+- Skip the brief acknowledgment even if context is sparse
 
 **If user says "what should I work on today":**
-Read the brief + brain files in `~/.claude/projects/<project>/brain/` and output a prioritized plan:
-1. Any blocked tasks (needs decision/review first)
-2. In-progress items closest to completion
-3. Next logical steps after those
+Check `~/.claude/projects/<project>/brain/` for decisions.md, bugs.md, context.md and output a prioritized plan.
 
 ---
 
