@@ -1,26 +1,114 @@
 #!/usr/bin/env node
 // SessionStart hook — injects cold-shower skill into every Claude Code session.
-// User never needs to type /cold-shower — Claude already knows it and offers it.
+
+'use strict'
 
 const fs = require('fs')
 const path = require('path')
+const os = require('os')
+
+const projectName = path.basename(process.cwd())
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getTodayLocal() {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
+}
+
+function isNewSession(lastWorkedOn, todayStr) {
+  if (!lastWorkedOn) return false
+  const lastDate = lastWorkedOn.slice(0, 10)
+  const gapMs = Date.now() - new Date(lastWorkedOn).getTime()
+  return lastDate !== todayStr || gapMs > 4 * 60 * 60 * 1000
+}
+
+function formatTimeAgo(isoStr) {
+  try {
+    const m = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60000)
+    if (m < 60) return `${m}m ago`
+    const h = Math.floor(m / 60)
+    if (h < 48) return m % 60 > 0 ? `${h}h ${m % 60}m ago` : `${h}h ago`
+    return `${Math.floor(h / 24)} days ago`
+  } catch { return '' }
+}
+
+function parseFrontmatter(content) {
+  const result = { lastWorkedOn: null, branch: null, filesModified: [], body: '' }
+  try {
+    const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/)
+    if (!match) { result.body = content; return result }
+    const yaml = match[1]; result.body = match[2] || ''
+    const lw = yaml.match(/^last_worked_on:\s*(.+)$/m)
+    if (lw) result.lastWorkedOn = lw[1].trim().replace(/^['"]|['"]$/g, '')
+    const br = yaml.match(/^branch:\s*(.+)$/m)
+    if (br) result.branch = br[1].trim().replace(/^['"]|['"]$/g, '')
+    const fb = yaml.match(/^files_modified:\s*\n((?:[ \t]*-[^\n]*\n?)*)/m)
+    if (fb) result.filesModified = fb[1].split('\n').map(l => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean)
+  } catch {}
+  return result
+}
+
+function extractSection(body, name) {
+  try {
+    const m = body.match(new RegExp(`###?\\s+${name}[^\\n]*\\n([\\s\\S]*?)(?=\\n###?\\s+|$)`, 'i'))
+    return m ? m[1].trim() : ''
+  } catch { return '' }
+}
+
+// ── 1. Daily Brief — written FIRST so it's within the ~10k additionalContext cap ──
+
+try {
+  const today = getTodayLocal()
+  const progressFile = path.join(os.homedir(), '.claude', 'projects', projectName, 'brain', 'progress.md')
+  let progressContent = null
+  try { progressContent = fs.readFileSync(progressFile, 'utf8') } catch {}
+
+  if (progressContent) {
+    const { lastWorkedOn, branch, filesModified, body } = parseFrontmatter(progressContent)
+    if (isNewSession(lastWorkedOn, today)) {
+      const inProgress = extractSection(body, 'In Progress')
+      const decisions = extractSection(body, 'Decisions')
+      const timeAgo = lastWorkedOn ? formatTimeAgo(lastWorkedOn) : null
+      const hasItems = (inProgress && !inProgress.startsWith('(none')) || (filesModified && filesModified.length > 0)
+
+      let ctx = '[COLD-SHOWER DAILY BRIEF — MANDATORY FIRST RESPONSE]\n'
+      ctx += `INSTRUCTION: Your first reply this session MUST start with the brief. Never just say "Hey" or "Hi".\n`
+      if (hasItems) {
+        ctx += `Required opening: "Welcome back to ${projectName}. Last session was ${timeAgo || 'a while'} ago on branch ${branch || 'unknown'}."\n`
+        ctx += `Then name the top in-progress item and offer to continue.\n`
+      } else {
+        ctx += `Required opening: "Welcome back to ${projectName}. Last session was ${timeAgo || 'a while'} ago on branch ${branch || 'unknown'}. What are you building today?"\n`
+      }
+      ctx += `last_session: ${lastWorkedOn || 'unknown'}\n`
+      ctx += `branch: ${branch || 'unknown'}\n`
+      if (filesModified && filesModified.length) ctx += `files_touched: ${filesModified.join(', ')}\n`
+      if (inProgress && !inProgress.startsWith('(none')) ctx += `in_progress: ${inProgress}\n`
+      if (decisions && !decisions.startsWith('(none')) ctx += `decisions: ${decisions}\n`
+      ctx += '\n'
+
+      process.stdout.write(ctx)
+    }
+  }
+} catch {}
+
+// ── 2. SKILL.md ───────────────────────────────────────────────────────────────
 
 const locations = [
   process.env.CLAUDE_PLUGIN_ROOT
     ? path.join(process.env.CLAUDE_PLUGIN_ROOT, 'skills', 'cold-shower', 'SKILL.md')
     : null,
   path.join(__dirname, '..', 'skills', 'cold-shower', 'SKILL.md'),
-  path.join(process.env.HOME || '', '.claude', 'skills', 'cold-shower', 'SKILL.md'),
+  path.join(os.homedir(), '.claude', 'skills', 'cold-shower', 'SKILL.md'),
 ].filter(Boolean)
 
 const skillPath = locations.find(p => { try { return fs.existsSync(p) } catch { return false } })
-if (!skillPath) process.exit(0)
+if (skillPath) {
+  try { process.stdout.write(fs.readFileSync(skillPath, 'utf8')) } catch {}
+}
 
-process.stdout.write(fs.readFileSync(skillPath, 'utf8'))
+// ── 3. RECALL — brain file headers ───────────────────────────────────────────
 
-// Inject recall memories from brain files
-const os = require('os')
-const projectName = path.basename(process.cwd())
 const brainFiles = [
   path.join(os.homedir(), '.claude', 'brain', 'preferences.md'),
   path.join(os.homedir(), '.claude', 'projects', projectName, 'brain', 'context.md'),
@@ -38,109 +126,3 @@ for (const f of brainFiles) {
 if (memoryLines.length > 0) {
   process.stdout.write('\n\n## RECALL: Project Memory\n' + memoryLines.slice(0, 15).join('\n') + '\n')
 }
-
-// ── Daily Brief ──────────────────────────────────────────────────────────────
-
-function getTodayLocal() {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
-}
-
-function isNewSession(lastWorkedOn, todayStr) {
-  if (!lastWorkedOn) return false
-  const lastDate = lastWorkedOn.slice(0, 10)
-  const gapMs = Date.now() - new Date(lastWorkedOn).getTime()
-  return lastDate !== todayStr || gapMs > 4 * 60 * 60 * 1000
-}
-
-function formatTimeAgo(isoStr) {
-  try {
-    const diffMs = Date.now() - new Date(isoStr).getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    if (diffMins < 60) return `${diffMins}m ago`
-    const diffHours = Math.floor(diffMins / 60)
-    if (diffHours < 48) {
-      const remMins = diffMins % 60
-      return remMins > 0 ? `${diffHours}h ${remMins}m ago` : `${diffHours}h ago`
-    }
-    const diffDays = Math.floor(diffHours / 24)
-    return `${diffDays} days ago`
-  } catch { return '' }
-}
-
-
-function parseFrontmatter(content) {
-  const result = { lastWorkedOn: null, branch: null, filesModified: [], status: null, body: '' }
-  try {
-    const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/)
-    if (!match) { result.body = content; return result }
-    const yaml = match[1]
-    result.body = match[2] || ''
-
-    const lastWorkedOnMatch = yaml.match(/^last_worked_on:\s*(.+)$/m)
-    if (lastWorkedOnMatch) result.lastWorkedOn = lastWorkedOnMatch[1].trim().replace(/^['"]|['"]$/g, '')
-
-    const branchMatch = yaml.match(/^branch:\s*(.+)$/m)
-    if (branchMatch) result.branch = branchMatch[1].trim().replace(/^['"]|['"]$/g, '')
-
-    const statusMatch = yaml.match(/^status:\s*(.+)$/m)
-    if (statusMatch) result.status = statusMatch[1].trim().replace(/^['"]|['"]$/g, '')
-
-    // Parse files_modified as YAML list items
-    const filesBlock = yaml.match(/^files_modified:\s*\n((?:[ \t]*-[^\n]*\n?)*)/m)
-    if (filesBlock) {
-      result.filesModified = filesBlock[1]
-        .split('\n')
-        .map(l => l.replace(/^\s*-\s*/, '').trim())
-        .filter(Boolean)
-    }
-  } catch {}
-  return result
-}
-
-function extractSection(body, sectionName) {
-  try {
-    const regex = new RegExp(`###?\\s+${sectionName}[^\n]*\n([\\s\\S]*?)(?=\n###?\\s+|$)`, 'i')
-    const match = body.match(regex)
-    return match ? match[1].trim() : ''
-  } catch { return '' }
-}
-
-function truncateLines(text, maxLines) {
-  const lines = text.split('\n').filter(l => l.trim())
-  return lines.slice(0, maxLines).join('\n')
-}
-
-try {
-  const today = getTodayLocal()
-  const progressFile = path.join(os.homedir(), '.claude', 'projects', projectName, 'brain', 'progress.md')
-
-  let progressContent = null
-  try { progressContent = fs.readFileSync(progressFile, 'utf8') } catch {}
-
-  const { lastWorkedOn, branch, filesModified, body } = progressContent ? parseFrontmatter(progressContent) : {}
-
-  // Inject session context for Claude — visual display handled by brief.js pre-launch
-  if (progressContent && isNewSession(lastWorkedOn, today)) {
-    const inProgress = extractSection(body, 'In Progress')
-    const decisions = extractSection(body, 'Decisions')
-    const timeAgo = lastWorkedOn ? formatTimeAgo(lastWorkedOn) : null
-    const hasItems = (inProgress && !inProgress.startsWith('(none')) || (filesModified && filesModified.length > 0)
-
-    let ctx = '\n\n[COLD-SHOWER DAILY BRIEF — MANDATORY FIRST RESPONSE]\n'
-    ctx += `Your FIRST response this session MUST acknowledge this brief. Do NOT just say "Hey" or "Hi".\n`
-    if (hasItems) {
-      ctx += `Say: "Welcome back to ${projectName}. Last session${timeAgo ? ` was ${timeAgo} ago` : ''} on branch ${branch || 'unknown'}."\n`
-      ctx += `Then name the most important in-progress item and offer to continue it.\n`
-    } else {
-      ctx += `Say: "Welcome back to ${projectName}. Last session${timeAgo ? ` was ${timeAgo} ago` : ''} on branch ${branch || 'unknown'}. No tasks were captured yet — what are you building today?"\n`
-    }
-    ctx += `\n--- session data ---\n`
-    if (lastWorkedOn) ctx += `last_session: ${lastWorkedOn} (${timeAgo})\n`
-    if (branch) ctx += `branch: ${branch}\n`
-    if (filesModified && filesModified.length) ctx += `files_touched: ${filesModified.join(', ')}\n`
-    if (inProgress && !inProgress.startsWith('(none')) ctx += `in_progress:\n${inProgress}\n`
-    if (decisions && !decisions.startsWith('(none')) ctx += `decisions:\n${decisions}\n`
-    process.stdout.write(ctx)
-  }
-} catch {}
