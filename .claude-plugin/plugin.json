@@ -1,27 +1,42 @@
 {
   "name": "cold-shower",
-  "version": "1.0.0",
-  "description": "Reality check for vibe-coded apps. Five audits, one report: LLM costs, AI security, code health, dependencies, production readiness. Auto-activates on relevant keywords.",
+  "version": "2.0.0",
+  "description": "Reality check for vibe-coded apps. 6 audits → Vibe Score 0-100. Plan-gate blocks edits until approved. Persistent second brain across sessions.",
   "author": {
     "name": "PradiptaPutra",
     "url": "https://github.com/PradiptaPutra"
   },
+  "homepage": "https://github.com/PradiptaPutra/cold-shower",
+  "repository": "https://github.com/PradiptaPutra/cold-shower",
+  "license": "MIT",
   "hooks": {
     "SessionStart": [{
       "hooks": [{
         "type": "command",
-        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/activate.js\"",
+        "command": "node \"${CLAUDE_PLUGIN_DIR}/hooks/activate.js\"",
         "timeout": 5
       }]
     }],
     "UserPromptSubmit": [{
       "hooks": [{
         "type": "command",
-        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/trigger.js\"",
+        "command": "node \"${CLAUDE_PLUGIN_DIR}/hooks/trigger.js\"",
+        "timeout": 10
+      }]
+    }],
+    "PreToolUse": [{
+      "hooks": [{
+        "type": "command",
+        "command": "node \"${CLAUDE_PLUGIN_DIR}/hooks/gate.js\"",
+        "timeout": 5
+      }]
+    }],
+    "Stop": [{
+      "hooks": [{
+        "type": "command",
+        "command": "node \"${CLAUDE_PLUGIN_DIR}/hooks/capture.js\"",
         "timeout": 10
       }]
     }]
-  },
-  "skills": ["cold-shower"],
-  "repository": "https://github.com/PradiptaPutra/cold-shower"
+  }
 }

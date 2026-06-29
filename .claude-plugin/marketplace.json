@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "cold-shower",
+  "description": "Reality check for vibe-coded apps. Vibe Score 0-100, LLM cost audit, AI security scan, git hygiene, and plan-gate enforcement.",
+  "owner": {
+    "name": "PradiptaPutra",
+    "url": "https://github.com/PradiptaPutra"
+  },
+  "plugins": [
+    {
+      "name": "cold-shower",
+      "description": "Six parallel audits → Vibe Score. Plan-gate blocks edits until approved. Persistent second brain across sessions.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
