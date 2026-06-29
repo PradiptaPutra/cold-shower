@@ -11,7 +11,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
 [![Benchmarked](https://img.shields.io/badge/benchmarked-15%20repos-brightgreen)](#-benchmark-results)
 
-*One install. Three modes. Auto-triggers. No commands to memorize.*
+*One install. Four modes. Auto-triggers. No commands to memorize.*
 
 </div>
 
@@ -32,21 +32,20 @@
 
 ---
 
-## ⚡ Three modes, one skill
+## ⚡ Four modes, one skill
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         cold-shower                             │
-├───────────────────┬──────────────────────┬──────────────────────┤
-│    🔍 AUDIT       │    📋 PLAN-GATE      │     🧠 RECALL        │
-│                   │                      │                      │
-│  6 parallel       │  Structured plan     │  Persistent second   │
-│  audits →         │  BEFORE any code.    │  brain across all    │
-│  Vibe Score       │  PreToolUse hook     │  sessions.           │
-│  0–100            │  blocks edits until  │  Replaces Obsidian.  │
-│                   │  you type APPROVED.  │                      │
-│  "audit me"       │  "implement X"       │  "remember this"     │
-└───────────────────┴──────────────────────┴──────────────────────┘
+┌──────────────┬──────────────────┬────────────────┬─────────────────┐
+│  🔍 AUDIT    │  📋 PLAN-GATE    │   🧠 RECALL    │  📅 DAILY BRIEF │
+│              │                  │                │                 │
+│  6 parallel  │  Structured plan │  Persistent    │  Auto-shows     │
+│  audits →    │  BEFORE any      │  second brain  │  what you left  │
+│  Vibe Score  │  code. Hook      │  across all    │  off when you   │
+│  0–100       │  blocks edits    │  sessions.     │  open next day. │
+│              │  until APPROVED. │  Replaces      │  No command.    │
+│              │                  │  Obsidian.     │  Zero of 6 AI   │
+│  "audit me"  │  "implement X"   │ "remember this"│  tools do this. │
+└──────────────┴──────────────────┴────────────────┴─────────────────┘
 ```
 
 ---
@@ -77,6 +76,8 @@ Works on every Claude Code project you open after that. **No commands to memoriz
 
 | You say... | Mode | What happens |
 |-----------|------|-------------|
+| *(open new session next day)* | 📅 | Daily brief auto-injects — no command needed |
+| `"what should I work on today"` | 📅 | Prioritized plan from last session context |
 | `"audit my codebase"` | 🔍 | Full 6-audit health check → Vibe Score |
 | `"is this ready to deploy?"` | 🔍 | Pre-deploy gate scan |
 | `"my LLM bill is insane"` | 🔍 | Cost audit → caching + routing fixes |
@@ -165,6 +166,45 @@ Ran cold-shower across **15 public JS/TS repos**. [Full results →](BENCHMARKS.
 
 ---
 
+## 📅 Daily Brief — never start from zero again
+
+Close your laptop. Open it tomorrow. cold-shower shows exactly where you left off — automatically.
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  🧊 DAILY BRIEF — myapp — Monday Jun 30                  │
+│  Last session: Sunday 11:47 PM (8h 12m ago)              │
+│  Branch: feature/auth-refactor                           │
+├──────────────────────────────────────────────────────────┤
+│  Left off:                                               │
+│    - implementing stripe webhook handler                 │
+│    - still need to test refund flow                      │
+├──────────────────────────────────────────────────────────┤
+│  Files touched:                                          │
+│    · src/api/webhooks.ts                                 │
+│    · src/lib/stripe.ts                                   │
+├──────────────────────────────────────────────────────────┤
+│  Ask: 'what should I work on today' for today's plan     │
+└──────────────────────────────────────────────────────────┘
+```
+
+Claude's first response:
+> Welcome back. You were implementing the stripe webhook handler with the refund flow still incomplete.
+>
+> Best first task today: finish the refund test in `src/lib/stripe.ts` — it's 60% done.
+>
+> Want me to open it and pick up where you left off?
+
+**How it works:**
+- `capture.js` (Stop hook) — at session end, extracts files touched, decisions made, in-progress items → writes `~/.claude/projects/<project>/brain/progress.md`
+- `activate.js` (SessionStart hook) — detects new day OR >4h gap → reads progress.md → injects brief
+- Atomic lock (`brief-lock-YYYY-MM-DD.lock`) — if you have 3 terminals open, only 1 shows the box. All 3 have the context.
+- Project-scoped — `/my-app` and `/deep-research` each get their own brief
+
+**Zero of 6 major AI coding tools do this.** Cursor, Windsurf, GitHub Copilot Workspace, Amp, Kiro, Zed all start from scratch every session.
+
+---
+
 ## 📋 Plan-gate — no more AI slop
 
 Every `"implement X"` or `"fix X"` generates a plan **before writing a single line**:
@@ -247,6 +287,7 @@ Sprint 0.5 fires **before everything else** if `.env` is committed.
 | **Generates fix code** | ❌ | ❌ | ✅ real TS/JS files |
 | **Persistent memory** | ❌ | ❌ | ✅ survives sessions |
 | **Score over time** | ❌ | ❌ | ✅ history + trend |
+| **Daily brief** | ❌ | ❌ | ✅ auto on session start |
 
 > caveman fixes verbosity. ponytail fixes over-engineering. cold-shower fixes what's already in production.
 > **Install all three — they don't overlap.**
@@ -264,6 +305,7 @@ Sprint 0.5 fires **before everything else** if `.env` is committed.
 ## 🗺️ Roadmap
 
 - [x] Benchmarks — 15-repo study published ([BENCHMARKS.md](BENCHMARKS.md))
+- [x] Daily Brief — auto session context on new day (0 of 6 competitors have this)
 - [ ] Cursor `.cursorrules` port
 - [ ] `cold-shower diff` — scan only PR-changed files
 - [ ] Product Hunt launch
